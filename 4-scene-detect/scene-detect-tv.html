@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!--
+	HTML5 Example: ChromaKey 
+	(c) 2011-13 Juergen Lohr/Oliver Lietz, Beuth-Hochschule Berlin
+	-->
+	
+	
+    <!-- Page Style -->
+    <style>
+        body
+        {
+            background: black;
+            color: #CCCCCC;
+			font-family: sans-serif;
+        }
+		h1 { font-size:1.7em; font-weight:normal; padding:0 0 0 8px; }
+    </style>
+
+    <!-- Javascript image processing -->
+    <script type="text/javascript" src="script/processor.js"></script>
+
+</head>
+<body>
+	<h1>Difference Video Coding - Lietz</h1>
+    <div>
+		
+		<!-- video container - run javascript doLoad() when ready -->
+        <video id="video" muted="true" autobuffer="true" controls="true" tabindex="0" onloadedmetadata="processor.doLoad()">
+
+			<!-- mp4 file for safari, IE -->
+			<source src="../assets/TV-100s-2110.podm.h264.mp4" type="video/mp4" />
+
+			<!-- webm file for firefox, chrome -->
+			<source src="../assets/TV-100s-2110.podm.h264.webm" type="video/webm" />
+
+<!--			
+			<source src="../assets/scene-cut.mp4" type="video/mp4" />
+			<source src="../assets/scene-cut.webm" type="video/webm" />
+-->
+			<!-- Alternate content: just print a message, no video available -->
+			No HTML5-Video support? Try a newer browser! (Opera11, IE9, Firefox4, Safari5)
+
+        </video>
+
+        <!-- 3 canvas objects for resulting videos -->
+        <canvas id="c1"></canvas>
+    </div>
+	
+
+<!-- unused
+	Color Offset: <input id="color_offset" type="range"  min="-100" max="100" onchange="processor.change_color_offset()"/>
+-->
+
+	<div id="cutlist">
+	</div>
+	
+	<!-- camera button and script -->
+    <hr>
+	<a href="#" onclick="startCam()">Start Camera</a>
+    <script type="text/javascript" src="script/camera.js"></script>
+	
+	<!-- log area to display information from javascript -->
+    <hr>
+	Log:
+	<div id="log">
+	</div>
+
+<br>
+<br>
+</body>
+</html>

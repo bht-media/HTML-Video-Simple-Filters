@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!--
+	HTML5 Example: Image Processing 
+	Waveform monitor
+	2013 Oliver Lietz, Beuth-Hochschule Berlin
+	-->
+	
+	
+    <!-- Page Style -->
+    <style>
+        body
+        {
+            background: black;
+            color: #CCCCCC;
+			font-family: sans-serif;
+        }
+		h1 { font-size:1.7em; font-weight:normal; padding:0 0 0 8px; }
+    </style>
+
+    <!-- Javascript image processing -->
+    <script type="text/javascript" src="script/processor.js"></script>
+
+</head>
+<body>
+	<h1>HTML5 Example - Waveform Monitor - Oliver Lietz</h1>
+    <div>
+
+		<!-- video container - run javascript processor.doLoad() when ready -->
+        <video id="video" autobuffer="true"  muted="true" width="320" height="240" controls="true" tabindex="0" onloadedmetadata="processor.doLoad()">
+
+			<!-- mp4 file for safari, IE -->
+			<source src="../assets/TV-100s-2110.podm.h264.mp4" type="video/mp4" />
+
+			<!-- webm file for firefox, chrome -->
+			<source src="../assets/TV-100s-2110.podm.h264.webm" type="video/webm" />
+
+			<!-- Alternate content: just print a message, no video available -->
+			No HTML5-Video support? Try a newer browser! (Opera11, IE9, Firefox4, Safari5)
+
+        </video>
+
+      <canvas id="c1"></canvas>
+      <p></p>
+      <canvas id="c2" height="255" width="320"></canvas>
+      <canvas id="c3" height="255" width="320"></canvas>
+      <canvas id="c4" height="255" width="320"></canvas>
+    </div>
+	
+	Brightness: <input id="color_offset" type="range"  min="-100" max="100" onchange="processor.change_color_offset()"/> <br>
+	Color R: <input id="color_r" type="range"  min="-100" max="100" onchange="processor.change_color_offset('r')"/>	<br>
+	Color G: <input id="color_g" type="range"  min="-100" max="100" onchange="processor.change_color_offset('g')"/>	<br>
+	Color B: <input id="color_b" type="range"  min="-100" max="100" onchange="processor.change_color_offset('b')"/>	<br>
+<hr>
+	<strong>Waveform Video Line:</strong>
+    <input id="video_line" type="range"  min="0" max="202" onchange="processor.change_line()"/>
+	<br>
+	<input type="checkbox" name="gesamt"  id="radioButton" onChange="processor.change_radioButton()">
+    <label for="gesamt">Show All Lines</label>
+	<br>
+	<input type="checkbox" name="fill"  id="fillLines" onChange="processor.change_fillLines()">
+    <label for="fill">Fill Histogram</label>
+
+	<br>
+	Background:
+    <input id="back_color" type="range"  min="-1" max="255" onchange="processor.change_background()"/>
+	
+    <hr>
+	
+	<!-- camera button and script -->
+	<a href="#" onclick="startCam()">Start Camera</a>
+    <script type="text/javascript" src="script/camera.js"></script>
+	
+    <hr>
+	<!-- log area to display information from javascript -->
+	<div id="log">
+	</div>
+
+<br>
+<br>
+</body>
+</html>

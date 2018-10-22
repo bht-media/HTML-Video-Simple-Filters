@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!--
+	HTML5 / Video Example Lietz/Lohr, BHT Berlin
+	-->
+
+</head>
+<!-- PAGE Style -->
+<style>
+	body {
+		font-family: "Helvetica Neue", "Helvetica", Arial, sans-serif;
+	}
+	#camArea {
+		margin-top:20px;
+		margin-bottom:50px;
+	}
+	
+	.slider {
+		width:30%;
+		margin-bottom:10px;
+	}
+	
+	.sliderLabel {
+		width:50px;
+		text-transform: uppercase;
+	}
+	
+	
+	
+	
+</style>
+<body>
+	<h1>HTML-Video: Beispiel-Bildfilter</h1>
+    <div>
+        <video id="video01" muted controls width="480" height="360">
+        <source src="../assets/TV-100s-2110.podm.h264.mp4" type="video/mp4" />
+        no HTML5-Video supported?
+        </video>
+        <!-- Canvas Object to render video -->
+        <div id="canvasContainer"><canvas id="canvas01"></canvas></div>
+        <!-- Brightness Adjustment sliders for sum and seperate color channels -->
+        <div id="brightnessAdjust">
+	        <h1>Helligkeit</h1>
+	        <div class="sliderLabel">Gesamt</div><input class="slider" type="range" id="allBrightness" min="-255" max="255"><br>
+	        <div class="sliderLabel">Rot</div><input class="slider" type="range" id="rBrightness" min="-255" max="255"><br>
+	        <div class="sliderLabel">Grün</div><input class="slider" type="range" id="gBrightness" min="-255" max="255"><br>
+	        <div class="sliderLabel">Blau</div><input class="slider" type="range" id="bBrightness" min="-255" max="255"><br>
+        </div>
+        <!-- Black and White and Sepia Filter Selection -->
+        <div id="filterSelect">
+	        <form id="filterSelectForm">
+		        <h1>Filter</h1>
+		        <input type="radio" name="filter_select" value="filter_none" checked>Kein Filter<br>
+		        <input type="radio" name="filter_select" value="filter_bw">Schwarzweiss<br>
+		        <input type="radio" name="filter_select" value="filter_sepia">Sepia<br>
+		        <input type="radio" name="filter_select" value="filter_box">Box Blur<br>
+		        <input type="radio" name="filter_select" value="filter_gauss">Gaussian Blur<br>
+		        <input type="radio" name="filter_select" value="filter_prewitt">Prewitt Sharpen<br>
+		        <br>
+		        <strong>WebGL</strong><br>
+		        <div id="WebGL_area">
+		        <input type="radio" name="filter_select" class="glSelector" value="filter_glInk">GL Ink<br>
+		        <input type="radio" name="filter_select" class="glSelector" value="filter_glLens">GL Lens Blur<br>		        
+		        <input type="radio" name="filter_select" class="glSelector" value="filter_glVignette">GL Vignette<br>
+		        <input type="radio" name="filter_select" class="glSelector" value="filter_glColorHalftone">GL Color Halftone<br>		        		        
+		        </div>
+	        </form>
+        </div>
+        <!-- Camera button -->
+        <div id="camArea">
+	        <h2>Aufgabe 2: Kamera</h2>
+	        <button id="cameraStartButton">Start Camera</a>
+        </div>
+        <script>
+	        // are any filters selected?
+	        var availableFilters = {
+		        NONE:0,
+		        BW:1,
+		        SEPIA:2,
+		        BOXBLUR:3,
+		        GAUSS:4,
+		        PREWITT:5,
+		        GLINK:6,
+		        GLLENS:7,
+		        GLVIGNETTE:8,
+		        GLCOLORHALFTONE:9
+	        }
+	        var activeFilter = availableFilters.NONE;
+	        var filter_bw = false;
+	        var filter_sepia = false;
+	        // Sepia Color Values
+	        var sepia = [100, 50, 0]
+	        // Brightness Values
+	        var brightness = {
+		        r:0,
+		        g:0,
+		        b:0
+	        }
+	        
+	        // GL Canvas
+	        var glCanvas;
+	        var canvas01;
+	        document.addEventListener('DOMContentLoaded', function() {
+		        //attempt to create WebGL canvas and output if error
+		        try {
+			        glCanvas = fx.canvas();
+		        } catch(e) {
+			        document.getElementById('WebGL_area').innerHTML = "<p>WebGL not supported by your browser</p>";
+		        }
+		        //Video and Canvas and Context
+		        const video01 = document.getElementById('video01');
+		        canvas01 = document.getElementById('canvas01');
+		        const context01 = canvas01.getContext('2d');
+		        
+		        //Canvas width and height variables to later set dimensions if necessary
+		        var c01w;
+		        var c01h;
+		        
+		        //initial canvas width and height setting
+				canvas01.width = video01.width;
+				canvas01.height = video01.height;
+				//canvas01.width = 480;
+				//canvas01.height = 360;
+				
+				//Brightness Sliders
+				const globalBrightnessElem = document.getElementById('allBrightness');
+				let globalBrightness = globalBrightnessElem.value;
+				
+				const rBrightnessElem = document.getElementById('rBrightness');
+				const gBrightnessElem = document.getElementById('gBrightness');
+				const bBrightnessElem = document.getElementById('bBrightness');							
+				
+				//Global Brightness Slider functionality:
+				//If this slider is moved, all others must follow
+				globalBrightnessElem.addEventListener('input', function() {
+					const newBrightness = parseInt(globalBrightnessElem.value, 10);
+					const brightnessDiff = newBrightness - globalBrightness;
+					rBrightnessElem.value = parseInt(rBrightnessElem.value, 10) + brightnessDiff;
+					gBrightnessElem.value = parseInt(gBrightnessElem.value, 10) + brightnessDiff;
+					bBrightnessElem.value = parseInt(bBrightnessElem.value, 10) + brightnessDiff;
+					globalBrightness = newBrightness;
+					updateBrightness();
+				});
+				
+				//color channel slider functionality
+				rBrightnessElem.addEventListener('input', () => { updateBrightness(); })
+				gBrightnessElem.addEventListener('input', () => { updateBrightness(); })
+				bBrightnessElem.addEventListener('input', () => { updateBrightness(); })								
+				
+				//function to update brightness values on slider movement
+				function updateBrightness() {
+					brightness = {
+						r:parseInt(rBrightnessElem.value),
+						g:parseInt(gBrightnessElem.value),
+						b:parseInt(bBrightnessElem.value),												
+					}
+				}
+		        
+		        //Once the video has loaded meta data we can start drawing it into the canvas
+		        video01.addEventListener('loadedmetadata', function() {
+			       console.log("playing");
+			       //create background canvas to swap out image data
+			       c01w = video01.videoWidth;
+			       c01h = video01.videoHeight;
+			       canvas01.width = c01w;
+			       canvas01.height = c01h;
+			       console.log(c01w);
+			       //call our draw function to fill the canvas with our video
+			       draw(this, context01, c01w, c01h);
+		        });        
+	        }, false);
+	        
+	        function draw(v,ctx, w,h) {
+			     if(activeFilter <= availableFilters.PREWITT) {
+			        var imgData;
+			        switch(activeFilter) {
+				        //NO FILTER
+				        case availableFilters.NONE:
+				        imgData = Filters.getPixels(v);
+				        break;
+				        //BLACK & WHITE
+				        case availableFilters.BW:
+				        imgData = Filters.filterImage(Filters.greyscale, v);
+				        break;
+				        //SEPIA
+				        case availableFilters.SEPIA:
+				        //imgData = Filters.filterImage(Filters.greyscale, v, sepia);
+				        imgData = Filters.filterImage(Filters.sepia, v);
+				        break;
+				        //BOX BLUR
+				        case availableFilters.BOXBLUR:
+				        imgData = Filters.filterImage(Filters.convolute, v, Filters.blurFilterMatrixes.box);
+				        break;
+				        //GAUSSIAN BLUR
+				        case availableFilters.GAUSS:
+				        imgData = Filters.filterImage(Filters.convolute, v, Filters.blurFilterMatrixes.gauss);
+				        break;
+						//PREWITT FILTER
+						case availableFilters.PREWITT:
+				        imgData = Filters.filterImage(Filters.convolute, v, Filters.blurFilterMatrixes.prewitt);
+				        break;	        
+			        }
+			        imgData = Filters.filterImage(Filters.offset, imgData, [brightness.r,brightness.g,brightness.b])
+			        ctx.putImageData(imgData,0,0);
+			    } else {
+				    var texture = glCanvas.texture(v);
+				    switch(activeFilter) {
+					    //GL INK
+					    case availableFilters.GLINK:
+						glCanvas.draw(texture).ink(0.25).update();
+						break;
+						//GL LENS BLUR
+						case availableFilters.GLLENS:
+						glCanvas.draw(texture).lensBlur(2,-1,45*(Math.PI/180)).update();
+						break;
+						//GL VIGNETTE
+						case availableFilters.GLVIGNETTE:
+						glCanvas.draw(texture).vignette(0,1).update();
+						break;
+						//GL COLOR HALFTONE
+						case availableFilters.GLCOLORHALFTONE:
+						glCanvas.draw(texture).colorHalftone(0,0,0.25,4).update();
+						break;
+				    }
+				    
+			    }
+		        //repeat function at regular interval
+		        setTimeout(draw, 40, v,ctx, w,h);
+	        }
+	        
+	        //Set up filter selector functionality
+	        const filterSelectors = document.querySelectorAll('input[name="filter_select"]');
+	        filterSelectors.forEach(elem => {
+		       elem.addEventListener('change', function() {
+			       const oldChild = document.getElementById('canvasContainer').firstChild;
+			       if(elem.classList.contains('glSelector')) {
+				       document.getElementById('canvasContainer').replaceChild(glCanvas, oldChild);
+			       } else {
+				       document.getElementById('canvasContainer').replaceChild(canvas01, oldChild);    
+			       }
+			       
+			       updateFilter();
+			       
+			       	
+		       }); 
+	        });
+	        //function to update filter settings
+	        function updateFilter() {
+	        const selected_filter = document.querySelector('input[name="filter_select"]:checked').value;
+	        	switch(selected_filter) {
+		        	case "filter_bw":
+		        		activeFilter = availableFilters.BW;
+		        		break;
+		        	case "filter_sepia":
+		        		activeFilter = availableFilters.SEPIA;
+		        		break;
+		        	case "filter_none":
+		        		activeFilter = availableFilters.NONE;
+		        		break;
+		        	case "filter_box":
+		        		activeFilter = availableFilters.BOXBLUR;
+		        		break;
+		        	case "filter_gauss":
+		        		activeFilter = availableFilters.GAUSS;
+		        		break;
+		        	case "filter_prewitt":
+		        		activeFilter = availableFilters.PREWITT;
+		        		break;
+		        	case "filter_glInk":
+		        		activeFilter = availableFilters.GLINK;
+		        		break;
+		        	case "filter_glLens":
+		        		activeFilter = availableFilters.GLLENS;
+		        		break;
+		        	case "filter_glVignette":
+		        		activeFilter = availableFilters.GLVIGNETTE;
+		        		break;
+		        	case "filter_glColorHalftone":
+		        		activeFilter = availableFilters.GLCOLORHALFTONE;
+		        		break;
+		        	default:
+		        		activeFilter = availableFilters.NONE;
+		        		break;
+	        	}
+	        }
+	        
+        </script>
+        <!-- Camera Script -->
+        <script>
+	   		document.getElementById("cameraStartButton").addEventListener("click", () => {
+				startCam();
+			});
+	    </script>
+		<script type="text/javascript" src="scripts/camera.js"></script>        
+		<script type="text/javascript" src="scripts/Filters.js"></script>
+		<script type="text/ecmascript" src="scripts/glfx.js"></script>
+    </div>
+
+</body>
+</html>

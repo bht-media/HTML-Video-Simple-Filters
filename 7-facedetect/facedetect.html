@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <title>Simple Face/Skin Detector</title>
+  </head>
+  <body>
+    <h1>Simple Face/Skin Detector</h1>
+    <p>
+      <video controls width="480" height="360" muted>
+        <source src="../assets/blue_screen.mp4" type="video/mp4">
+      </video>
+    </p>
+    <p>
+      <canvas width="480" height="360" style="border: 1px solid black;">
+      </canvas>
+      <canvas id="scratch" width="480" height="360" style="display: none;">
+      </canvas>
+      </p><div id="count">0</div>
+    <p></p>
+    <script>
+      window.onload = function() {
+        initCanvas();
+      }
+      var worker = new Worker("facedetect.js");
+      var context, video, sctxt, count, canvas;
+      var calls = 0;
+      function initCanvas() {
+        video = document.getElementsByTagName("video")[0];
+        canvas = document.getElementsByTagName("canvas")[0];
+        context = canvas.getContext("2d");
+        scratch = document.getElementById("scratch");
+        sctxt = scratch.getContext("2d");
+        count = document.getElementById("count");
+        video.addEventListener("play", postFrame, false);
+        worker.addEventListener("message", drawFrame, false);
+      }
+
+      function postFrame() {
+        w = 480; h = 360;
+        sctxt.drawImage(video, 0, 0, w, h);
+        frame = sctxt.getImageData(0, 0, w, h);
+        arg = {
+          frame: frame,
+          height: h,
+          width: w
+        }
+        worker.postMessage(arg);
+      }
+        
+      function drawFrame (event) {
+        msg = event.data;
+        outframe = msg.frame;
+        if (video.paused || video.ended) {
+          return;
+        }        
+        context.putImageData(outframe, 0, 0);
+        // draw rectangle on canvas
+        context.strokeRect(msg.x, msg.y, msg.w, msg.h);
+        calls += 1;
+        count.textContent = calls;
+        setTimeout(function () {
+          postFrame();
+        }, 0);
+      }
+    </script>
+  
+
+	<!-- camera button and script -->
+  <hr>
+	<a href="#" onclick="startCam()">Start Camera</a>
+    <script type="text/javascript" src="camera.js"></script>
+	
+	<!-- log area to display information from javascript -->
+    <hr>
+	<div id="log">
+	</div>
+
+
+</body></html>

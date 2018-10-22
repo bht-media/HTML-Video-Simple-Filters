@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <!--
+	HTML5 Video Processing 
+	"Brightness" and "Color Adjust" Effect (Color Offset)
+	2013 Oliver Lietz / Juergen Lohr, Beuth-Hochschule Berlin
+	-->
+
+    <!-- Page Style (css)-->
+    <style>
+        body
+        {
+            background: black;
+            color: #CCCCCC;
+			font-family: sans-serif;
+        }
+		h1 { font-size:1.7em; font-weight:normal; padding:0 0 0 8px; }
+		a { color: #CCCCFF; }
+    </style>
+
+    <!-- Javascript image processing -->
+    <script type="text/javascript" src="script/processor.js"></script>
+
+    <!-- Javascript tools / browser checks -->
+    <script type="text/javascript" src="script/tools.js"></script>
+	
+</head>
+<body>
+	<h1>HTML5 Video Processing - Color and Brightness - Oliver Lietz</h1>
+    <div>
+
+		<!-- video container for mp4 and webm
+		     - load mp4 / webm
+			 - muted=true: no sound 
+			 - width/height: display size on html page
+			 - controls=true: show play button and slider
+			 - onloademetadata: run javascript processor.doLoad() when ready 
+		-->
+		
+        <video id="video" muted="true" width="320" height="320" autobuffer="true" controls="true" tabindex="0" onloadedmetadata="processor.doLoad()">
+
+			<!-- mp4 file for safari, IE -->
+			<!-- webm file for firefox, chrome -->
+			<source src="../assets/TV-100s-2110.podm.h264.mp4" type="video/mp4" />
+			<source src="../assets/TV-100s-2110.podm.h264.webm" type="video/webm" />
+			<!--
+			<source src="../assets/v2b.mp4" type="video/mp4" />
+			<source src="../assets/v2b.webm" type="video/webm" />
+			-->
+			<!-- Alternate content: just print a message, no video available -->
+			No HTML5-Video support? Try a newer browser! (Opera11, IE9, Firefox4, Safari5)
+
+        </video>
+
+        <!-- canvas object for resulting canvas video after image processing
+			 will be written by the computeFrame function
+		-->
+        <canvas id="c1"></canvas>
+    
+	</div>
+
+    <!-- slider for brightness and color values, calls processor.change_color_offset() -->
+	Brightness: <input id="color_offset" type="range"  min="-100" max="100" onchange="processor.change_color_offset()"/><br>
+	Color R: <input id="color_r" type="range"  min="-100" max="100" onchange="processor.change_color_offset('r')"/>	<br>
+	Color G: <input id="color_g" type="range"  min="-100" max="100" onchange="processor.change_color_offset('g')"/>	<br>
+	Color B: <input id="color_b" type="range"  min="-100" max="100" onchange="processor.change_color_offset('b')"/>	<br>
+
+	<!-- camera button and script -->
+    <hr>
+	<a href="#" onclick="startCam()">Start Camera</a>
+    <script type="text/javascript" src="script/camera.js"></script>
+	
+	<!-- log area to display information from javascript -->
+    <hr>
+	<div id="log">
+	</div>
+
+<br>
+<br>
+</body>
+</html>
