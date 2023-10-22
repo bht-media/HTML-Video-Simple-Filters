@@ -16,6 +16,8 @@ These examples show simple video filters using HTML video and canvas objects.
 
 [2d-colorfilter-glfx](2d-colorfilter-glfx/VideoFilters.html)
 
+See https://evanw.github.io/glfx.js/
+
 ### Chroma Key / Color Key
 
 [3-chromakey](3-chromakey/colorkey-blue.html)
@@ -30,7 +32,9 @@ These examples show simple video filters using HTML video and canvas objects.
 
 ### Face/Skin Detection
 
-[6-facedetect](6-facedetect/facedetect.html)
+[7-facedetect](7-facedetect/facedetect.html)
+
+From http://html5videoguide.net/DefinitiveGuide/code_c7_7.html
 
 ### Notes
 
